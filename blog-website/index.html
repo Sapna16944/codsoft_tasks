@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fieldnotes — Notes on design, tech, work &amp; life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#home" class="brand" onclick="closeMobileMenu()">
+      <span class="brand-mark">F</span>
+      <span class="brand-name">Fieldnotes</span>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="#home" class="nav-link" onclick="closeMobileMenu()">Home</a>
+      <div class="nav-cats" id="navCats"></div>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="searchBtn" onclick="openSearch()" aria-label="Search articles" title="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg id="themeIconSun" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.55 1.55M17.55 17.55L19.1 19.1M2 12h2.2M19.8 12H22M4.9 19.1l1.55-1.55M17.55 6.45L19.1 4.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg id="themeIconMoon" width="18" height="18" viewBox="0 0 24 24" fill="none" style="display:none"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn menu-btn" id="menuBtn" onclick="toggleMobileMenu()" aria-label="Open menu" title="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HOME VIEW ============ -->
+<main id="homeView">
+
+  <section class="hero" id="heroSection"></section>
+
+  <section class="filters-section">
+    <div class="filters-inner">
+      <div class="chip-row" id="chipRow"></div>
+      <p class="result-count" id="resultCount"></p>
+    </div>
+  </section>
+
+  <section class="grid-section">
+    <div class="posts-grid" id="postsGrid"></div>
+    <div class="load-more-wrap">
+      <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Load more articles</button>
+      <p class="all-loaded" id="allLoadedMsg" style="display:none">You've reached the end — that's every article for now.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ DETAIL VIEW ============ -->
+<main id="detailView" style="display:none"></main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand footer-logo">
+        <span class="brand-mark">F</span>
+        <span class="brand-name">Fieldnotes</span>
+      </div>
+      <p class="footer-blurb">Short, honest field notes on design, technology, productivity, travel, wellness and business — written for people who'd rather read one good paragraph than ten mediocre ones.</p>
+      <div class="footer-social" id="footerSocial"></div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="#home" onclick="setCategory('all')">All articles</a>
+      <div id="footerCats"></div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Stay in the loop</h4>
+      <p class="footer-note">One short email a week. No noise, unsubscribe anytime.</p>
+      <div class="newsletter">
+        <input type="email" id="newsletterEmail" placeholder="you@example.com">
+        <button onclick="subscribeNewsletter()">Subscribe</button>
+      </div>
+      <p class="newsletter-msg" id="newsletterMsg"></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© <span id="year"></span> Fieldnotes. Built for demonstration purposes.</p>
+  </div>
+</footer>
+
+<!-- ============ SEARCH OVERLAY ============ -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-panel">
+    <div class="search-input-row">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Search articles, categories, tags…" oninput="renderSearchResults()">
+      <button class="icon-btn" onclick="closeSearch()" aria-label="Close search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

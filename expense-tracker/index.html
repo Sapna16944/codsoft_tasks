@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ledger — Personal Finance Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="top">
+      <div class="brand">
+        <div class="brand-mark">L</div>
+        <div>
+          <div class="brand-name">Ledger</div>
+          <div class="brand-sub">Your personal income &amp; expense tracker</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <p class="hero-label">Current balance</p>
+      <p class="hero-balance" id="heroBalance">$0.00</p>
+      <div class="hero-foot">
+        <div class="stat">Total in <b id="heroIn">$0.00</b></div>
+        <div class="stat">Total out <b id="heroOut">$0.00</b></div>
+        <div class="stat"><span id="heroCount">0</span> transactions logged</div>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="sum-card income">
+        <div class="sum-top"><span class="sum-title">Total Income</span><span class="sum-icon">↑</span></div>
+        <div class="sum-amount" id="cardIncome">$0.00</div>
+      </div>
+      <div class="sum-card expense">
+        <div class="sum-top"><span class="sum-title">Total Expenses</span><span class="sum-icon">↓</span></div>
+        <div class="sum-amount" id="cardExpense">$0.00</div>
+      </div>
+      <div class="sum-card balance">
+        <div class="sum-top"><span class="sum-title">Net Balance</span><span class="sum-icon">=</span></div>
+        <div class="sum-amount" id="cardBalance">$0.00</div>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- FORM -->
+      <div class="panel form-panel">
+        <h2 class="form-title" id="formTitle">Add a transaction</h2>
+        <p class="form-sub" id="formSub">Log money coming in or going out.</p>
+
+        <div class="type-toggle">
+          <button type="button" class="active income" id="btnIncome" onclick="setType('income')">Income</button>
+          <button type="button" class="expense" id="btnExpense" onclick="setType('expense')">Expense</button>
+        </div>
+
+        <div id="txForm">
+          <div class="field amount">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+          </div>
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" required></select>
+          </div>
+          <div class="field">
+            <label for="description">Description (optional)</label>
+            <input type="text" id="description" placeholder="e.g. Weekly groceries" maxlength="60">
+          </div>
+          <div class="field">
+            <label for="date">Date</label>
+            <input type="date" id="date" required>
+          </div>
+          <button type="button" class="submit-btn income-mode" id="submitBtn" onclick="handleSubmit()">Add
+            income</button>
+          <button type="button" class="cancel-edit" id="cancelEdit" onclick="cancelEditMode()">Cancel edit</button>
+        </div>
+      </div>
+
+      <!-- LIST -->
+      <div class="panel list-panel">
+        <div class="list-head">
+          <h2 class="list-title">Transaction history</h2>
+          <div class="filters">
+            <select id="typeFilter" onchange="renderList()">
+              <option value="all">All types</option>
+              <option value="income">Income only</option>
+              <option value="expense">Expenses only</option>
+            </select>
+            <select id="categoryFilter" onchange="renderList()">
+              <option value="all">All categories</option>
+            </select>
+          </div>
+        </div>
+        <div id="txList"></div>
+      </div>
+
+    </div>
+
+    <p class="storage-note" id="storageNote">Loading your saved transactions…</p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fieldnotes — Notes on design, tech, work &amp; life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: #F6F6F4;
+  --surface: #FFFFFF;
+  --surface-2: #F0F1EE;
+  --ink: #1A1D27;
+  --ink-soft: #5B6270;
+  --ink-faint: #8B90A0;
+  --line: #E4E5E1;
+  --accent: #2952CC;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E7ECFB;
+  --accent2: #C9A227;
+  --danger: #B23A3A;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 9px;
+  --shadow-1: 0 1px 2px rgba(20,20,20,.04), 0 6px 18px -10px rgba(20,20,20,.12);
+  --shadow-2: 0 4px 10px rgba(20,20,20,.06), 0 22px 40px -18px rgba(20,20,20,.22);
+  --ease: cubic-bezier(.22,.9,.32,1);
+  color-scheme: light;
+}
+
+html.dark{
+  --bg: #14161C;
+  --surface: #1C1F28;
+  --surface-2: #21242E;
+  --ink: #ECEDF1;
+  --ink-soft: #9AA0AE;
+  --ink-faint: #6C7280;
+  --line: #2B2F3A;
+  --accent: #6C8CFF;
+  --accent-ink: #101322;
+  --accent-soft: #232A45;
+  --accent2: #E0BB4E;
+  --shadow-1: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px -10px rgba(0,0,0,.5);
+  --shadow-2: 0 4px 10px rgba(0,0,0,.35), 0 24px 44px -18px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition: background .35s var(--ease), color .35s var(--ease);
+}
+h1,h2,h3,h4{font-family:'Source Serif 4', Georgia, serif; margin:0;}
+p{margin:0;}
+a{color:inherit; text-decoration:none;}
+button{font-family:inherit;}
+img{max-width:100%; display:block;}
+::selection{background:var(--accent-soft); color:var(--accent);}
+
+.wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+
+@keyframes riseIn{
+  from{opacity:0; transform:translateY(16px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes fadeIn{
+  from{opacity:0;} to{opacity:1;}
+}
+
+/* ================= NAV ================= */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--line);
+  transition: background .35s var(--ease), border-color .35s var(--ease);
+}
+.nav-inner{
+  max-width:1180px; margin:0 auto; padding:14px 24px;
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+}
+.brand{display:flex; align-items:center; gap:9px;}
+.brand-mark{
+  width:32px; height:32px; border-radius:8px;
+  background: linear-gradient(150deg, var(--accent), #1B2E80);
+  color:#fff; font-family:'Source Serif 4',serif; font-weight:700; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 3px 10px -3px rgba(41,82,204,.55);
+  transition: transform .3s var(--ease);
+  flex-shrink:0;
+}
+.brand:hover .brand-mark{transform: rotate(-6deg) scale(1.06);}
+.brand-name{font-family:'Source Serif 4', serif; font-weight:600; font-size:19px; letter-spacing:-.01em;}
+
+.nav-links{display:flex; align-items:center; gap:22px;}
+.nav-link{font-size:14.5px; font-weight:600; color:var(--ink-soft); transition: color .2s var(--ease);}
+.nav-link:hover{color:var(--accent);}
+.nav-cats{display:flex; gap:18px;}
+.nav-cats a{
+  font-size:14px; color:var(--ink-soft); position:relative; padding-bottom:2px;
+  transition: color .2s var(--ease);
+}
+.nav-cats a::after{
+  content:""; position:absolute; left:0; right:0; bottom:-3px; height:2px;
+  background:var(--accent); transform:scaleX(0); transform-origin:left;
+  transition: transform .25s var(--ease);
+}
+.nav-cats a:hover{color:var(--ink);}
+.nav-cats a:hover::after{transform:scaleX(1);}
+
+.nav-actions{display:flex; align-items:center; gap:8px;}
+.icon-btn{
+  width:36px; height:36px; border-radius:10px; border:1px solid var(--line);
+  background:var(--surface); color:var(--ink-soft); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: transform .18s var(--ease), background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease);
+}
+.icon-btn:hover{ color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow-1); background:var(--accent-soft); }
+.icon-btn:active{ transform:translateY(0) scale(.94); }
+.menu-btn{display:none;}
+
+@media (max-width: 860px){
+  .nav-links{
+    position:fixed; inset:60px 0 auto 0; background:var(--surface);
+    flex-direction:column; align-items:flex-start; gap:4px; padding:14px 24px 20px;
+    border-bottom:1px solid var(--line); box-shadow:var(--shadow-2);
+    transform: translateY(-12px); opacity:0; pointer-events:none;
+    transition: transform .25s var(--ease), opacity .2s var(--ease);
+  }
+  .nav-links.open{ transform:translateY(0); opacity:1; pointer-events:auto; }
+  .nav-cats{flex-direction:column; gap:2px; width:100%;}
+  .nav-cats a{padding:9px 4px; width:100%;}
+  .nav-link{padding:9px 4px; width:100%;}
+  .menu-btn{display:flex;}
+}
+
+/* ================= HERO ================= */
+.hero{padding:44px 24px 8px;}
+.hero-card{
+  max-width:1180px; margin:0 auto;
+  display:grid; grid-template-columns: 1.1fr .9fr; gap:0;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg);
+  overflow:hidden; box-shadow:var(--shadow-2);
+  animation: riseIn .55s var(--ease) both;
+}
+.hero-cover{
+  position:relative; min-height:320px; display:flex; align-items:flex-end; padding:22px;
+  overflow:hidden;
+}
+.hero-cover .cover-letter{
+  position:absolute; right:-6px; bottom:-40px; font-family:'Source Serif 4',serif; font-weight:700;
+  font-size:220px; line-height:1; color:rgba(255,255,255,.14); user-select:none;
+}
+.hero-badge{
+  position:relative; z-index:1;
+  background:rgba(255,255,255,.16); color:#fff; backdrop-filter: blur(6px);
+  border:1px solid rgba(255,255,255,.35);
+  font-size:12.5px; font-weight:700; letter-spacing:.02em;
+  padding:6px 12px; border-radius:100px;
+}
+.hero-body{padding:34px 40px; display:flex; flex-direction:column; justify-content:center; gap:14px;}
+.hero-cat{font-size:12.5px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.04em;}
+.hero-title{font-size:clamp(24px, 3vw, 34px); font-weight:600; line-height:1.18; letter-spacing:-.01em;}
+.hero-title a{ transition: color .2s var(--ease); }
+.hero-title a:hover{ color:var(--accent); }
+.hero-excerpt{font-size:15.5px; color:var(--ink-soft); line-height:1.6; max-width:52ch;}
+.hero-meta{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-faint);}
+.hero-cta{
+  margin-top:6px; display:inline-flex; align-items:center; gap:8px;
+  background:var(--ink); color:var(--bg); font-weight:600; font-size:14px;
+  padding:11px 18px; border-radius:100px; width:fit-content;
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+}
+.hero-cta:hover{ transform:translateY(-2px) translateX(2px); box-shadow:var(--shadow-2); background:var(--accent); color:#fff; }
+
+@media (max-width: 860px){
+  .hero-card{grid-template-columns:1fr;}
+  .hero-cover{min-height:200px;}
+  .hero-body{padding:26px 24px 32px;}
+}
+
+/* ================= FILTER CHIPS ================= */
+.filters-section{padding:26px 24px 6px;}
+.filters-inner{max-width:1180px; margin:0 auto;}
+.chip-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+.chip{
+  padding:8px 16px; border-radius:100px; border:1px solid var(--line);
+  background:var(--surface); font-size:13.5px; font-weight:600; color:var(--ink-soft);
+  cursor:pointer; transition: transform .18s var(--ease), background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+}
+.chip:hover{ transform:translateY(-2px); box-shadow:var(--shadow-1); }
+.chip.active{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+.result-count{font-size:13px; color:var(--ink-faint);}
+
+/* ================= POSTS GRID ================= */
+.grid-section{padding:14px 24px 60px;}
+.posts-grid{
+  max-width:1180px; margin:0 auto;
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:24px;
+}
+@media (max-width:960px){ .posts-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:640px){ .posts-grid{grid-template-columns:1fr;} }
+
+.post-card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+  overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:var(--shadow-1);
+  animation: riseIn .5s var(--ease) both;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+}
+.post-card:hover{
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-2);
+}
+.card-cover{
+  position:relative; height:170px; overflow:hidden;
+}
+.card-cover .cover-letter{
+  position:absolute; right:-10px; bottom:-26px; font-family:'Source Serif 4',serif; font-weight:700;
+  font-size:130px; line-height:1; color:rgba(255,255,255,.16); user-select:none;
+  transition: transform .4s var(--ease);
+}
+.post-card:hover .cover-letter{ transform: scale(1.08) rotate(-2deg); }
+.card-tag{
+  position:absolute; top:12px; left:12px; z-index:1;
+  background:rgba(255,255,255,.18); color:#fff; backdrop-filter: blur(6px);
+  border:1px solid rgba(255,255,255,.32);
+  font-size:11.5px; font-weight:700; letter-spacing:.02em; text-transform:uppercase;
+  padding:5px 10px; border-radius:100px;
+}
+.card-body{padding:18px 18px 20px; display:flex; flex-direction:column; gap:9px; flex:1;}
+.card-title{font-size:17.5px; font-weight:600; line-height:1.32; letter-spacing:-.005em;}
+.card-title a{transition: color .2s var(--ease);}
+.post-card:hover .card-title a{color:var(--accent);}
+.card-excerpt{font-size:13.8px; color:var(--ink-soft); line-height:1.55; flex:1;}
+.card-meta{
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:12.5px; color:var(--ink-faint); margin-top:6px; padding-top:12px; border-top:1px solid var(--line);
+}
+.card-meta .author{font-weight:600; color:var(--ink-soft);}
+
+.load-more-wrap{max-width:1180px; margin:36px auto 0; text-align:center;}
+.load-more-btn{
+  padding:13px 26px; border-radius:100px; border:1px solid var(--line);
+  background:var(--surface); color:var(--ink); font-weight:600; font-size:14.5px; cursor:pointer;
+  box-shadow:var(--shadow-1);
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease), color .2s var(--ease);
+}
+.load-more-btn:hover{ transform:translateY(-3px); box-shadow:var(--shadow-2); background:var(--ink); color:var(--bg); }
+.load-more-btn:active{ transform:translateY(-1px) scale(.98); }
+.all-loaded{font-size:13.5px; color:var(--ink-faint); margin-top:4px;}
+
+/* ================= DETAIL VIEW ================= */
+.detail-hero{
+  padding:0; position:relative; height:340px; overflow:hidden;
+  display:flex; align-items:flex-end;
+}
+.detail-hero .cover-letter{
+  position:absolute; right:-10px; bottom:-70px; font-family:'Source Serif 4',serif; font-weight:700;
+  font-size:340px; line-height:1; color:rgba(255,255,255,.14); user-select:none;
+}
+.detail-hero-inner{
+  position:relative; z-index:1; max-width:820px; margin:0 auto; width:100%;
+  padding:0 24px 34px; color:#fff;
+}
+.back-link{
+  display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600;
+  color:rgba(255,255,255,.85); margin-bottom:16px; transition: transform .2s var(--ease), color .2s var(--ease);
+}
+.back-link:hover{ color:#fff; transform:translateX(-3px); }
+.detail-badge{
+  display:inline-block; background:rgba(255,255,255,.18); backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.35);
+  font-size:12px; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+  padding:5px 12px; border-radius:100px; margin-bottom:14px;
+}
+.detail-title{font-size:clamp(26px,4vw,42px); font-weight:600; line-height:1.15; letter-spacing:-.01em;}
+
+.detail-body-wrap{max-width:760px; margin:0 auto; padding:38px 24px 0;}
+.detail-meta{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  font-size:13.5px; color:var(--ink-faint); padding-bottom:26px; border-bottom:1px solid var(--line); margin-bottom:30px;
+}
+.detail-meta .author-name{font-weight:700; color:var(--ink);}
+.detail-content p{
+  font-size:17px; line-height:1.8; color:var(--ink); margin-bottom:22px;
+  max-width:70ch;
+}
+.detail-content p:first-of-type::first-letter{
+  font-family:'Source Serif 4', serif; font-size:52px; font-weight:700; float:left;
+  line-height:.85; padding-right:8px; padding-top:4px; color:var(--accent);
+}
+
+.tag-row{display:flex; gap:8px; flex-wrap:wrap; margin:30px 0 0;}
+.tag-pill{
+  font-size:12.5px; font-weight:600; color:var(--ink-soft); background:var(--surface-2);
+  border:1px solid var(--line); padding:6px 12px; border-radius:100px;
+  transition: transform .18s var(--ease), background .18s var(--ease), color .18s var(--ease);
+}
+.tag-pill:hover{ transform:translateY(-2px); background:var(--accent-soft); color:var(--accent); }
+
+.share-row{
+  display:flex; align-items:center; gap:10px; margin:30px 0 6px; padding:22px 0;
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+}
+.share-label{font-size:13px; font-weight:600; color:var(--ink-soft); margin-right:4px;}
+.share-btn{
+  width:38px; height:38px; border-radius:10px; border:1px solid var(--line);
+  background:var(--surface); color:var(--ink-soft); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease), color .18s var(--ease);
+}
+.share-btn:hover{ transform:translateY(-3px) rotate(-4deg); box-shadow:var(--shadow-1); background:var(--accent); color:#fff; border-color:var(--accent); }
+.share-btn.copied{ background:var(--accent2); color:#fff; border-color:var(--accent2); }
+
+/* Related */
+.related-section{max-width:1180px; margin:0 auto; padding:50px 24px 10px;}
+.related-title{font-size:22px; font-weight:600; margin-bottom:20px;}
+.related-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+@media (max-width:860px){ .related-grid{grid-template-columns:1fr;} }
+
+/* Comments */
+.comments-section{max-width:760px; margin:0 auto; padding:50px 24px 70px;}
+.comments-title{font-size:20px; font-weight:600; margin-bottom:22px;}
+.comment-form{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:18px; margin-bottom:28px; box-shadow:var(--shadow-1);
+}
+.comment-form-row{display:flex; gap:10px; margin-bottom:10px;}
+.comment-form input, .comment-form textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius-sm);
+  background:var(--bg); color:var(--ink); font-family:'Inter'; font-size:14px;
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease), transform .18s var(--ease);
+}
+.comment-form textarea{resize:vertical; min-height:80px;}
+.comment-form input:focus, .comment-form textarea:focus{
+  outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); transform:translateY(-1px);
+}
+.comment-submit{
+  padding:10px 20px; border:none; border-radius:100px; background:var(--accent); color:#fff;
+  font-weight:600; font-size:13.5px; cursor:pointer;
+  box-shadow: 0 4px 12px -3px rgba(41,82,204,.45);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+}
+.comment-submit:hover{ transform:translateY(-2px); box-shadow:0 10px 20px -6px rgba(41,82,204,.5); }
+.comment-submit:active{ transform:translateY(0) scale(.97); }
+
+.comment-item{
+  display:flex; gap:12px; padding:16px 0; border-bottom:1px solid var(--line);
+  animation: riseIn .35s var(--ease) both;
+}
+.comment-avatar{
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background: linear-gradient(150deg, var(--accent), var(--accent2));
+  color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;
+}
+.comment-name{font-size:14px; font-weight:700;}
+.comment-date{font-size:12px; color:var(--ink-faint); margin-left:8px; font-weight:400;}
+.comment-text{font-size:14.5px; color:var(--ink-soft); line-height:1.55; margin-top:3px;}
+.no-comments{font-size:13.5px; color:var(--ink-faint); padding:10px 0;}
+
+/* ================= SEARCH OVERLAY ================= */
+.search-overlay{
+  position:fixed; inset:0; z-index:100; background:rgba(10,10,14,.5); backdrop-filter: blur(4px);
+  display:flex; align-items:flex-start; justify-content:center; padding:80px 20px;
+  opacity:0; pointer-events:none; transition: opacity .25s var(--ease);
+}
+.search-overlay.open{ opacity:1; pointer-events:auto; }
+.search-panel{
+  width:100%; max-width:640px; background:var(--surface); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-2); border:1px solid var(--line); overflow:hidden;
+  transform: translateY(-16px) scale(.98); transition: transform .25s var(--ease);
+  max-height:70vh; display:flex; flex-direction:column;
+}
+.search-overlay.open .search-panel{ transform: translateY(0) scale(1); }
+.search-input-row{ display:flex; align-items:center; gap:10px; padding:16px 18px; border-bottom:1px solid var(--line); color:var(--ink-faint); }
+.search-input-row input{
+  flex:1; border:none; outline:none; background:transparent; color:var(--ink); font-size:16px; font-family:'Inter';
+}
+.search-results{ overflow-y:auto; padding:8px; }
+.search-result-item{
+  display:flex; gap:12px; align-items:center; padding:11px 12px; border-radius:var(--radius-sm); cursor:pointer;
+  transition: background .15s var(--ease);
+}
+.search-result-item:hover{ background:var(--surface-2); }
+.sr-cover{ width:44px; height:44px; border-radius:8px; flex-shrink:0; }
+.sr-title{ font-size:14.5px; font-weight:600; }
+.sr-meta{ font-size:12px; color:var(--ink-faint); }
+.search-empty{ text-align:center; padding:40px 20px; color:var(--ink-faint); font-size:14px; }
+
+/* ================= FOOTER ================= */
+.footer{ background:var(--surface); border-top:1px solid var(--line); margin-top:20px; }
+.footer-inner{
+  max-width:1180px; margin:0 auto; padding:52px 24px 34px;
+  display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px;
+}
+@media (max-width:760px){ .footer-inner{grid-template-columns:1fr; gap:32px;} }
+.footer-logo{ margin-bottom:12px; }
+.footer-blurb{ font-size:13.8px; color:var(--ink-soft); line-height:1.6; max-width:38ch; }
+.footer-social{ display:flex; gap:8px; margin-top:16px; }
+.footer-col h4{ font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-faint); margin-bottom:14px; }
+.footer-col a{ display:block; font-size:14px; color:var(--ink-soft); padding:4px 0; transition: color .18s var(--ease), transform .18s var(--ease); }
+.footer-col a:hover{ color:var(--accent); transform:translateX(3px); }
+.footer-note{ font-size:13px; color:var(--ink-faint); margin-bottom:12px; }
+.newsletter{ display:flex; gap:8px; }
+.newsletter input{
+  flex:1; min-width:0; padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--line);
+  background:var(--bg); color:var(--ink); font-size:13.5px;
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+.newsletter input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+.newsletter button{
+  padding:10px 16px; border:none; border-radius:var(--radius-sm); background:var(--ink); color:var(--bg);
+  font-weight:600; font-size:13px; cursor:pointer; white-space:nowrap;
+  transition: transform .18s var(--ease), background .18s var(--ease);
+}
+.newsletter button:hover{ transform:translateY(-2px); background:var(--accent); color:#fff; }
+.newsletter-msg{ font-size:12.5px; color:var(--accent); margin-top:8px; min-height:16px; }
+.footer-bottom{
+  border-top:1px solid var(--line); padding:18px 24px; text-align:center;
+  font-size:12.5px; color:var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001s !important; transition-duration:.001s !important; scroll-behavior:auto !important; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#home" class="brand" onclick="closeMobileMenu()">
+      <span class="brand-mark">F</span>
+      <span class="brand-name">Fieldnotes</span>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="#home" class="nav-link" onclick="closeMobileMenu()">Home</a>
+      <div class="nav-cats" id="navCats"></div>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="searchBtn" onclick="openSearch()" aria-label="Search articles" title="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg id="themeIconSun" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.55 1.55M17.55 17.55L19.1 19.1M2 12h2.2M19.8 12H22M4.9 19.1l1.55-1.55M17.55 6.45L19.1 4.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg id="themeIconMoon" width="18" height="18" viewBox="0 0 24 24" fill="none" style="display:none"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn menu-btn" id="menuBtn" onclick="toggleMobileMenu()" aria-label="Open menu" title="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HOME VIEW ============ -->
+<main id="homeView">
+
+  <section class="hero" id="heroSection"></section>
+
+  <section class="filters-section">
+    <div class="filters-inner">
+      <div class="chip-row" id="chipRow"></div>
+      <p class="result-count" id="resultCount"></p>
+    </div>
+  </section>
+
+  <section class="grid-section">
+    <div class="posts-grid" id="postsGrid"></div>
+    <div class="load-more-wrap">
+      <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Load more articles</button>
+      <p class="all-loaded" id="allLoadedMsg" style="display:none">You've reached the end — that's every article for now.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ DETAIL VIEW ============ -->
+<main id="detailView" style="display:none"></main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand footer-logo">
+        <span class="brand-mark">F</span>
+        <span class="brand-name">Fieldnotes</span>
+      </div>
+      <p class="footer-blurb">Short, honest field notes on design, technology, productivity, travel, wellness and business — written for people who'd rather read one good paragraph than ten mediocre ones.</p>
+      <div class="footer-social" id="footerSocial"></div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="#home" onclick="setCategory('all')">All articles</a>
+      <div id="footerCats"></div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Stay in the loop</h4>
+      <p class="footer-note">One short email a week. No noise, unsubscribe anytime.</p>
+      <div class="newsletter">
+        <input type="email" id="newsletterEmail" placeholder="you@example.com">
+        <button onclick="subscribeNewsletter()">Subscribe</button>
+      </div>
+      <p class="newsletter-msg" id="newsletterMsg"></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© <span id="year"></span> Fieldnotes. Built for demonstration purposes.</p>
+  </div>
+</footer>
+
+<!-- ============ SEARCH OVERLAY ============ -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-panel">
+    <div class="search-input-row">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Search articles, categories, tags…" oninput="renderSearchResults()">
+      <button class="icon-btn" onclick="closeSearch()" aria-label="Close search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Fieldnotes — sample content
+   ============================================================ */
+
+const CATEGORIES = [
+  { id: "design",       label: "Design",       letter: "D", gradient: "linear-gradient(135deg, #6C63FF 0%, #241E5E 100%)" },
+  { id: "technology",   label: "Technology",   letter: "T", gradient: "linear-gradient(135deg, #2F63E0 0%, #0B1D42 100%)" },
+  { id: "productivity", label: "Productivity", letter: "P", gradient: "linear-gradient(135deg, #1F8A5F 0%, #0B3B2A 100%)" },
+  { id: "travel",       label: "Travel",       letter: "V", gradient: "linear-gradient(135deg, #16A3A3 0%, #063F3F 100%)" },
+  { id: "wellness",     label: "Wellness",     letter: "W", gradient: "linear-gradient(135deg, #C9A227 0%, #5E4310 100%)" },
+  { id: "business",     label: "Business",     letter: "B", gradient: "linear-gradient(135deg, #B23A62 0%, #401225 100%)" }
+];
+
+function getCategory(id){
+  return CATEGORIES.find(c => c.id === id) || CATEGORIES[0];
+}
+
+const POSTS = [
+  {
+    id: "quiet-interfaces",
+    title: "The case for quieter interfaces",
+    excerpt: "Most products are shouting at their users. A look at why restraint, not decoration, is the harder and more valuable design skill.",
+    category: "design",
+    tags: ["design systems", "minimalism", "ux"],
+    author: "Nina Osei",
+    date: "2026-08-18",
+    featured: true,
+    content: [
+      "Open ten apps on your phone and count how many things are trying to get your attention at once — badges, banners, animated tooltips, colored dots that mean nothing on their own. Individually, each one seems harmless. Together, they add up to an interface that never stops talking.",
+      "Quiet design isn't the absence of personality. It's the discipline of deciding what actually deserves a person's attention on any given screen, and then having the confidence to let everything else recede. That's a harder skill than it sounds, because loud design is easy to justify one decision at a time — 'just one more banner won't hurt' — while quiet design requires someone to keep saying no.",
+      "The best test I've found is to imagine explaining every visual element on a screen to a stranger, one at a time: what does this color mean, why is this bold, why does this pulse. If you can't give a fast, confident answer, it's decoration, not communication, and decoration is what makes interfaces exhausting.",
+      "None of this is an argument for blank, lifeless products. It's an argument for spending your visual loudness on one or two things per screen that truly matter, and letting the rest of the interface do its job without raising its voice."
+    ]
+  },
+  {
+    id: "local-first-software",
+    title: "Why local-first software is having a moment",
+    excerpt: "Offline-capable, sync-when-you-can apps are quietly becoming the default architecture for a new generation of tools.",
+    category: "technology",
+    tags: ["software architecture", "offline", "sync"],
+    author: "Marcus Webb",
+    date: "2026-08-11",
+    featured: false,
+    content: [
+      "For most of the last fifteen years, 'cloud-first' was simply how software got built: the server held the truth, and the client was a thin window onto it. That model is easy to reason about, but it comes with a quiet cost — your app stops working the moment your connection does.",
+      "Local-first software flips the default. Data lives on the device first, changes are applied instantly with no spinner, and syncing to the server (and other devices) happens in the background whenever a connection is available. The user experience is dramatically better in the ordinary case, and it degrades gracefully in the bad one instead of breaking outright.",
+      "The hard part was never the idea — it's conflict resolution. When two people edit the same document offline and reconnect, whose change wins? A new generation of data structures, broadly known as CRDTs, solve this in a way that lets edits merge automatically without a central arbiter, and that's what's made local-first practical at scale rather than just a nice theory.",
+      "The teams shipping this well treat the network as an optimization, not a dependency. That single mental shift changes almost every decision downstream, from how state is stored to how errors are surfaced to the person actually using the product."
+    ]
+  },
+  {
+    id: "deep-work-myth",
+    title: "The deep work myth nobody wants to hear",
+    excerpt: "Four-hour focus blocks make for a good headline. For most working people, they're not the answer — here's what actually is.",
+    category: "productivity",
+    tags: ["focus", "time management", "work habits"],
+    author: "Priya Chandran",
+    date: "2026-08-04",
+    featured: false,
+    content: [
+      "The advice is everywhere: block off four uninterrupted hours, turn off every notification, and do your most important work in one long, glorious stretch. For a small number of people with a small number of jobs, this genuinely works. For almost everyone else, it's a plan that fails by 10am and then gets blamed on the person, not the plan.",
+      "Most real jobs are interrupt-driven by design. You have a team that needs answers, a manager who needs updates, and a role that exists precisely because other people depend on your responsiveness. Treating that as a personal failure to protect your calendar misses the actual shape of the problem.",
+      "A more realistic approach starts smaller: protect ninety focused minutes, not four hours. Put it at the time of day your energy is naturally highest, not whenever looks empty on the calendar. And instead of trying to eliminate interruptions, build a two-minute capture habit so an interrupting thought doesn't have to be resolved immediately — it just has to be written down somewhere you'll trust later.",
+      "Deep work isn't wrong as an idea. It's wrong as a one-size prescription. The goal isn't to copy someone else's four hours — it's to find the smallest reliable block that actually fits the job you have."
+    ]
+  },
+  {
+    id: "slow-travel-notebook",
+    title: "What three weeks in one city taught me about travel",
+    excerpt: "Ditching the two-cities-a-week itinerary for a single, slower trip changed how I think about being somewhere new.",
+    category: "travel",
+    tags: ["slow travel", "itinerary", "reflection"],
+    author: "Elena Marsh",
+    date: "2026-07-27",
+    featured: false,
+    content: [
+      "My old approach to a two-week trip was a spreadsheet: five cities, color-coded, every day accounted for. It made for a full camera roll and an exhausted body. Last spring I tried the opposite — one city, three weeks, no itinerary past day three — and it rearranged something in how I think about travel.",
+      "The first week felt strange, almost wasteful. I wasn't seeing enough. By the second week, I had a bakery I went back to, a bench I sat on most evenings, a bus route I no longer needed a map for. None of that shows up in a highlight reel, but it's the part that actually felt like being somewhere, rather than visiting it.",
+      "Slow travel also changes your relationship to bad weather and bad days. When you have three weeks, a rained-out afternoon isn't a loss — it's just a Tuesday. That alone removed most of the anxiety that used to follow me through every trip.",
+      "I'm not arguing everyone should abandon the whirlwind trip; sometimes that's genuinely the right call for the time you have. But if you've never tried staying still somewhere new, it's worth one trip to find out what you've been moving past."
+    ]
+  },
+  {
+    id: "boundary-setting-work",
+    title: "Saying no without sounding like you're saying no",
+    excerpt: "A handful of phrases that protect your time at work without torching the relationship in the process.",
+    category: "wellness",
+    tags: ["boundaries", "burnout", "communication"],
+    author: "Priya Chandran",
+    date: "2026-07-20",
+    featured: false,
+    content: [
+      "Most advice about boundaries focuses on the decision to say no, as if the hard part is the willpower. In my experience the harder part is almost always the delivery — finding language that's honest without reading as cold, and firm without reading as difficult.",
+      "One shift that helped me: instead of declining a request outright, offer the trade. 'I can get to this by Thursday if it comes ahead of the report I'm finishing — want me to reorder?' does the same job as 'no', but it hands the other person a real decision instead of a closed door.",
+      "Another is to separate the relationship from the request. You can be warm about the person and still direct about the constraint: 'I want to help with this, and I also don't want to promise something I can't deliver well.' Both halves of that sentence are true, and saying both matters.",
+      "None of this replaces an actual honest no when one is needed. But most workplace friction isn't caused by boundaries themselves — it's caused by boundaries that arrive as a surprise. Say the constraint earlier and more often, in smaller doses, and the big no becomes much rarer."
+    ]
+  },
+  {
+    id: "pricing-page-honesty",
+    title: "The pricing page is where trust is won or lost",
+    excerpt: "Clever pricing tricks might lift a quarter's numbers. They rarely survive contact with a customer who feels misled.",
+    category: "business",
+    tags: ["pricing", "trust", "saas"],
+    author: "Marcus Webb",
+    date: "2026-07-13",
+    featured: false,
+    content: [
+      "There's a well-worn playbook for pricing pages: anchor high, hide the annual toggle's real savings, bury usage limits in a tooltip, make the 'contact us' tier deliberately vague. Each trick has a study behind it showing a short-term lift. What the studies rarely measure is what happens six months later.",
+      "Customers who feel tricked at checkout don't usually complain — they just quietly stop trusting the rest of what you tell them. That distrust shows up later as higher support load, harder renewal conversations, and reviews that mention 'gotchas' long after the original decision has been forgotten.",
+      "The teams I've seen build durable pricing pages do something almost boring: they say the number, they say what it includes, and they say what happens at the edges — overages, downgrades, cancellation — before anyone has to ask. It converts slightly worse on day one and dramatically better over a year.",
+      "Pricing is one of the few pages where a customer is actively looking for a reason not to trust you. Removing the reasons is worth more than any single clever trick."
+    ]
+  },
+  {
+    id: "color-systems-that-scale",
+    title: "Building a color system that survives contact with a real product",
+    excerpt: "Most brand palettes fall apart the moment they meet a data table, a dark mode, and an error state. Here's a sturdier way to build one.",
+    category: "design",
+    tags: ["design systems", "color", "accessibility"],
+    author: "Nina Osei",
+    date: "2026-07-06",
+    featured: false,
+    content: [
+      "A brand palette usually gets designed for a hero image and a homepage — five or six beautiful colors chosen for how they look together in a mood board. Then someone needs a warning state, a fourth chart series, and a dark theme, and the palette has nothing to offer.",
+      "A system that scales starts from function, not mood: a neutral ramp with enough steps for text, borders and backgrounds in both themes; a small set of semantic colors for success, warning and danger that are chosen for contrast first and brand-fit second; and only then, an accent or two reserved for things that are genuinely interactive.",
+      "The neutral ramp is the part everyone skips and the part that matters most. Ten grays, evenly stepped in perceived lightness, will do more for a product's day-to-day quality than any accent color choice — because most of an interface, by area, is neutral.",
+      "Treat color as infrastructure, not decoration, and the palette stops being something you have to renegotiate every time the product grows a new feature."
+    ]
+  },
+  {
+    id: "notification-diet",
+    title: "I turned off every notification for a month. Here's what happened",
+    excerpt: "A blunt experiment in silence, and the surprising handful of alerts I chose to bring back.",
+    category: "productivity",
+    tags: ["focus", "digital habits", "experiment"],
+    author: "Elena Marsh",
+    date: "2026-06-29",
+    featured: false,
+    content: [
+      "I didn't ease into it. One evening I went through every app on my phone and turned every push notification off — messages, email, social, news, all of it — and left only phone calls and calendar alerts. The plan was one week. It turned into a month.",
+      "The first three days were uncomfortable in a specific way: I kept reaching for my phone out of habit, finding nothing waiting, and feeling a strange, low-grade anxiety about what I might be missing. By day five that anxiety had mostly evaporated, replaced by something closer to relief.",
+      "What surprised me wasn't how little I missed — it was how much of what used to feel urgent turned out to be nothing. Group chats sorted themselves out without me. Work questions resolved before I even opened my laptop. The handful of things that were genuinely time-sensitive found me anyway, usually as a phone call.",
+      "I did bring a few notifications back afterward: calendar reminders, a single messaging app for close family, and nothing else. A month of silence didn't make me anti-notification — it made me much stingier about which ones earn a place on the list."
+    ]
+  },
+  {
+    id: "budget-airline-playbook",
+    title: "A realistic playbook for booking cheap flights without the stress",
+    excerpt: "No secret incognito trick required — just a small set of habits that consistently beat the average fare.",
+    category: "travel",
+    tags: ["budget travel", "flights", "planning"],
+    author: "Elena Marsh",
+    date: "2026-06-22",
+    featured: false,
+    content: [
+      "Most flight-deal advice collapses into folklore — clear your cookies, book on a Tuesday, fly at 3am. Airline pricing algorithms don't care about your browser history, and most of that folklore has been debunked repeatedly. What actually moves the needle is less exciting and more reliable.",
+      "Flexibility is still the single biggest lever. Being willing to shift your travel dates by two or three days, or to fly into a nearby secondary airport, routinely beats any booking-time trick by a wide margin — because you're comparing across a wider set of fares instead of gaming one.",
+      "Fare alerts do real work precisely because they remove the need to check manually, which is where most people give up. Set one for a flexible date range and a realistic price ceiling, and let the tedious part happen automatically instead of doom-scrolling a booking site every evening.",
+      "Booking a one-way separately from a return can sometimes beat a round trip, and budget carriers occasionally undercut full-service ones enough to justify the extra baggage fee math. Neither is guaranteed, which is exactly why it's worth a five-minute comparison rather than a rule you follow blindly."
+    ]
+  },
+  {
+    id: "sleep-and-decisions",
+    title: "The decision you make worse when you're tired isn't the one you think",
+    excerpt: "Sleep deprivation doesn't just slow you down — it quietly changes which trade-offs feel acceptable.",
+    category: "wellness",
+    tags: ["sleep", "decision making", "health"],
+    author: "Priya Chandran",
+    date: "2026-06-15",
+    featured: false,
+    content: [
+      "It's well known that tired people react more slowly and make more small errors. Less well known is that sleep deprivation changes the kinds of trade-offs that feel reasonable — it doesn't just dull your judgment, it tilts it.",
+      "Research on sleep-deprived decision-making consistently finds a shift toward short-term reward and away from long-term risk assessment. Tired people don't just make more mistakes; they make a specific kind of mistake — favoring the option that feels good right now over the one that's better in a week.",
+      "That has an obvious implication most advice skips: don't just avoid big decisions when you're exhausted, be suspicious of any decision that conveniently favors the easy, immediate option when you're exhausted, because that's exactly the bias tired brains reach for.",
+      "The fix isn't complicated, even if it's inconvenient — a genuinely hard call deserves a night of real sleep before it gets made, not because sleep makes you smarter, but because it restores the part of your judgment that weighs the future fairly."
+    ]
+  },
+  {
+    id: "first-ten-hires",
+    title: "What actually breaks between a company's first and tenth hire",
+    excerpt: "It's rarely the product. The things that quietly break are process, communication, and shared context.",
+    category: "business",
+    tags: ["startups", "hiring", "management"],
+    author: "Marcus Webb",
+    date: "2026-06-08",
+    featured: false,
+    content: [
+      "At two or three people, a company runs on shared context — everyone was in the room for every decision, so nothing needs to be written down. That works beautifully right up until it doesn't, usually somewhere around hire six or seven, when for the first time someone wasn't in the room.",
+      "The failure mode is rarely dramatic. It shows up as small, repeated confusion: two people building slightly different versions of the same feature, a customer promise nobody else knew about, a decision that quietly gets re-litigated because the reasoning behind it was never written anywhere.",
+      "The fix isn't heavyweight process — early-stage companies that over-correct into process too fast often suffocate the speed that made them worth joining. It's a handful of lightweight habits: a short written decision log, a default of writing things down instead of only saying them, and one weekly moment where the whole team hears the same update at the same time.",
+      "Growing a team is really growing a communication system. Treat it as deliberately as you'd treat the product, and the tenth hire ramps up nearly as fast as the second one did."
+    ]
+  },
+  {
+    id: "designing-empty-states",
+    title: "Empty states are not a blank screen problem",
+    excerpt: "The moment before a product has any data is a chance to teach, not just a placeholder to fill.",
+    category: "design",
+    tags: ["ux", "onboarding", "content design"],
+    author: "Nina Osei",
+    date: "2026-06-01",
+    featured: false,
+    content: [
+      "It's easy to treat an empty state as an edge case — a screen that only exists briefly, before real content shows up, so it gets a placeholder icon and a single line of gray text and nothing more. That's a missed moment, because the empty state is often a new user's very first impression of what the product actually does.",
+      "A good empty state answers three questions in order: what would normally be here, why is it empty right now, and what's the one action that fixes that. Most bad empty states answer none of them — they just describe the absence ('No items yet') without pointing anywhere.",
+      "The tone matters as much as the content. An empty state is not the place for an apology or for cleverness that requires context the user doesn't have yet. It's the place for the clearest, most confident sentence in the whole product, because it's often competing with a user's genuine uncertainty about whether anything is broken.",
+      "Treat the empty state as onboarding, not decoration, and a screen that used to feel like a dead end starts doing real work for the product instead."
+    ]
+  }
+];
+
+</script>
+<script>
+/* ============================================================
+   Fieldnotes — app logic
+   ============================================================ */
+
+const PAGE_SIZE = 6;
+let activeCategory = "all";
+let visibleCount = PAGE_SIZE;
+
+const SOCIAL_LINKS = [
+  { label:"Twitter / X", icon:"𝕏", url:"https://twitter.com" },
+  { label:"LinkedIn", icon:"in", url:"https://linkedin.com" },
+  { label:"RSS", icon:"⟳", url:"#" }
+];
+
+/* ---------------- Helpers ---------------- */
+function fmtDate(iso){
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" });
+}
+function readTime(paragraphs){
+  const words = paragraphs.join(" ").split(/\s+/).length;
+  return Math.max(1, Math.round(words / 200));
+}
+function initials(name){
+  return name.split(" ").map(p => p[0]).join("").slice(0,2).toUpperCase();
+}
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ---------------- Cover art ---------------- */
+function coverStyle(catId){
+  const cat = getCategory(catId);
+  return `background:${cat.gradient};`;
+}
+function coverHtml(catId, size){
+  const cat = getCategory(catId);
+  return `
+    <div class="${size === 'sm' ? 'card-cover' : size === 'lg' ? 'hero-cover' : 'detail-hero'}" style="${coverStyle(catId)}">
+      <span class="cover-letter">${cat.letter}</span>
+      ${size === 'lg' ? `<span class="hero-badge">Featured</span>` : ''}
+      ${size === 'sm' ? `<span class="card-tag">${cat.label}</span>` : ''}
+    </div>`;
+}
+
+/* ---------------- Nav / footer category lists ---------------- */
+function renderNavCategories(){
+  const navHtml = CATEGORIES.map(c => `<a href="#home" onclick="setCategory('${c.id}')">${c.label}</a>`).join("");
+  document.getElementById("navCats").innerHTML = navHtml;
+  document.getElementById("footerCats").innerHTML = CATEGORIES.map(c =>
+    `<a href="#home" onclick="setCategory('${c.id}')">${c.label}</a>`).join("");
+}
+function renderFooterSocial(){
+  document.getElementById("footerSocial").innerHTML = SOCIAL_LINKS.map(s =>
+    `<a class="icon-btn" href="${s.url}" target="_blank" rel="noopener" title="${s.label}" aria-label="${s.label}">${s.icon}</a>`
+  ).join("");
+}
+
+/* ---------------- Chips ---------------- */
+function renderChips(){
+  const all = [{ id:"all", label:"All articles" }, ...CATEGORIES];
+  document.getElementById("chipRow").innerHTML = all.map(c =>
+    `<button class="chip ${activeCategory === c.id ? 'active' : ''}" onclick="setCategory('${c.id}')">${c.label}</button>`
+  ).join("");
+}
+function setCategory(id){
+  activeCategory = id;
+  visibleCount = PAGE_SIZE;
+  renderChips();
+  renderGrid();
+  if(location.hash !== "#home") location.hash = "#home";
+  document.getElementById("homeView").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+/* ---------------- Hero (featured post) ---------------- */
+function renderHero(){
+  const featured = POSTS.find(p => p.featured) || POSTS[0];
+  const cat = getCategory(featured.category);
+  document.getElementById("heroSection").innerHTML = `
+    <div class="hero-card">
+      ${coverHtml(featured.category, 'lg')}
+      <div class="hero-body">
+        <span class="hero-cat">${cat.label}</span>
+        <h1 class="hero-title"><a href="#post/${featured.id}">${featured.title}</a></h1>
+        <p class="hero-excerpt">${featured.excerpt}</p>
+        <div class="hero-meta">
+          <span>${featured.author}</span>
+          <span>·</span>
+          <span>${fmtDate(featured.date)}</span>
+          <span>·</span>
+          <span>${readTime(featured.content)} min read</span>
+        </div>
+        <a class="hero-cta" href="#post/${featured.id}">Read the article →</a>
+      </div>
+    </div>`;
+}
+
+/* ---------------- Posts grid ---------------- */
+function filteredPosts(){
+  return activeCategory === "all" ? POSTS : POSTS.filter(p => p.category === activeCategory);
+}
+function renderGrid(){
+  const list = filteredPosts();
+  const visible = list.slice(0, visibleCount);
+  document.getElementById("postsGrid").innerHTML = visible.map(cardHtml).join("");
+  document.getElementById("resultCount").textContent =
+    `Showing ${visible.length} of ${list.length} article${list.length === 1 ? '' : 's'}`;
+
+  const btn = document.getElementById("loadMoreBtn");
+  const msg = document.getElementById("allLoadedMsg");
+  if(visibleCount >= list.length){
+    btn.style.display = "none";
+    msg.style.display = list.length ? "block" : "none";
+  } else {
+    btn.style.display = "inline-block";
+    msg.style.display = "none";
+  }
+}
+function cardHtml(p){
+  const cat = getCategory(p.category);
+  return `
+    <article class="post-card">
+      ${coverHtml(p.category, 'sm')}
+      <div class="card-body">
+        <h3 class="card-title"><a href="#post/${p.id}">${p.title}</a></h3>
+        <p class="card-excerpt">${p.excerpt}</p>
+        <div class="card-meta">
+          <span class="author">${p.author}</span>
+          <span>${fmtDate(p.date)}</span>
+        </div>
+      </div>
+    </article>`;
+}
+function loadMore(){
+  visibleCount += PAGE_SIZE;
+  renderGrid();
+}
+
+/* ---------------- Detail view ---------------- */
+async function renderDetail(id){
+  const post = POSTS.find(p => p.id === id);
+  if(!post){ location.hash = "#home"; return; }
+  const cat = getCategory(post.category);
+
+  const related = POSTS.filter(p => p.id !== post.id && p.category === post.category).slice(0,3);
+  const fallback = POSTS.filter(p => p.id !== post.id && !related.includes(p)).slice(0, 3 - related.length);
+  const relatedPosts = [...related, ...fallback];
+
+  document.getElementById("detailView").innerHTML = `
+    <div class="detail-hero" style="${coverStyle(post.category)}">
+      <span class="cover-letter">${cat.letter}</span>
+      <div class="detail-hero-inner">
+        <a class="back-link" href="#home" onclick="setCategory('all')">← Back to all articles</a>
+        <span class="detail-badge">${cat.label}</span>
+        <h1 class="detail-title">${post.title}</h1>
+      </div>
+    </div>
+
+    <div class="detail-body-wrap">
+      <div class="detail-meta">
+        <span class="comment-avatar" style="width:34px;height:34px;font-size:12.5px;">${initials(post.author)}</span>
+        <span class="author-name">${post.author}</span>
+        <span>·</span>
+        <span>${fmtDate(post.date)}</span>
+        <span>·</span>
+        <span>${readTime(post.content)} min read</span>
+      </div>
+
+      <div class="detail-content">
+        ${post.content.map(p => `<p>${p}</p>`).join("")}
+      </div>
+
+      <div class="tag-row">
+        ${post.tags.map(t => `<span class="tag-pill" onclick="searchFromTag('${t}')">#${t}</span>`).join("")}
+      </div>
+
+      <div class="share-row">
+        <span class="share-label">Share:</span>
+        <button class="share-btn" title="Share on X" onclick="shareTo('x','${post.id}','${escapeHtml(post.title)}')">𝕏</button>
+        <button class="share-btn" title="Share on LinkedIn" onclick="shareTo('linkedin','${post.id}','${escapeHtml(post.title)}')">in</button>
+        <button class="share-btn" title="Share on Facebook" onclick="shareTo('facebook','${post.id}','${escapeHtml(post.title)}')">f</button>
+        <button class="share-btn" id="copyLinkBtn" title="Copy link" onclick="copyLink('${post.id}')">🔗</button>
+      </div>
+    </div>
+
+    <section class="related-section">
+      <h2 class="related-title">You might also like</h2>
+      <div class="related-grid">${relatedPosts.map(cardHtml).join("")}</div>
+    </section>
+
+    <section class="comments-section">
+      <h2 class="comments-title" id="commentsTitle">Comments</h2>
+      <div class="comment-form">
+        <div class="comment-form-row">
+          <input type="text" id="commentName" placeholder="Your name">
+        </div>
+        <div class="comment-form-row">
+          <textarea id="commentText" placeholder="Share your thoughts…"></textarea>
+        </div>
+        <button class="comment-submit" onclick="submitComment('${post.id}')">Post comment</button>
+      </div>
+      <div id="commentsList"></div>
+    </section>
+  `;
+  await renderComments(post.id);
+}
+
+/* ---------------- Comments (persisted) ---------------- */
+async function getComments(postId){
+  try{
+    const res = await window.storage.get("blog:comments:" + postId, false);
+    return res ? JSON.parse(res.value) : [];
+  }catch(e){
+    return [];
+  }
+}
+async function saveComments(postId, comments){
+  try{
+    await window.storage.set("blog:comments:" + postId, JSON.stringify(comments), false);
+  }catch(e){ console.error("Could not save comments", e); }
+}
+async function renderComments(postId){
+  const comments = await getComments(postId);
+  document.getElementById("commentsTitle").textContent = `Comments (${comments.length})`;
+  const list = document.getElementById("commentsList");
+  if(comments.length === 0){
+    list.innerHTML = `<p class="no-comments">No comments yet — be the first to share your thoughts.</p>`;
+    return;
+  }
+  list.innerHTML = comments.map(c => `
+    <div class="comment-item">
+      <div class="comment-avatar">${initials(c.name)}</div>
+      <div>
+        <span class="comment-name">${escapeHtml(c.name)}</span><span class="comment-date">${fmtDate(c.date)}</span>
+        <p class="comment-text">${escapeHtml(c.text)}</p>
+      </div>
+    </div>
+  `).join("");
+}
+async function submitComment(postId){
+  const nameEl = document.getElementById("commentName");
+  const textEl = document.getElementById("commentText");
+  const name = nameEl.value.trim();
+  const text = textEl.value.trim();
+  if(!name || !text){ (name ? textEl : nameEl).focus(); return; }
+
+  const comments = await getComments(postId);
+  comments.unshift({ name, text, date: new Date().toISOString().slice(0,10) });
+  await saveComments(postId, comments);
+  nameEl.value = ""; textEl.value = "";
+  renderComments(postId);
+}
+
+/* ---------------- Sharing ---------------- */
+function shareTo(network, postId, title){
+  const url = location.origin + location.pathname + "#post/" + postId;
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+  const targets = {
+    x: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+  };
+  window.open(targets[network], "_blank", "noopener,width=600,height=520");
+}
+function copyLink(postId){
+  const url = location.origin + location.pathname + "#post/" + postId;
+  const btn = document.getElementById("copyLinkBtn");
+  const done = () => {
+    btn.classList.add("copied");
+    btn.textContent = "✓";
+    setTimeout(() => { btn.classList.remove("copied"); btn.textContent = "🔗"; }, 1600);
+  };
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(done).catch(done);
+  } else {
+    done();
+  }
+}
+
+/* ---------------- Search ---------------- */
+function openSearch(){
+  document.getElementById("searchOverlay").classList.add("open");
+  const input = document.getElementById("searchInput");
+  input.value = "";
+  renderSearchResults();
+  setTimeout(() => input.focus(), 50);
+}
+function closeSearch(){
+  document.getElementById("searchOverlay").classList.remove("open");
+}
+function searchFromTag(tag){
+  openSearch();
+  document.getElementById("searchInput").value = tag;
+  renderSearchResults();
+}
+function renderSearchResults(){
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  const container = document.getElementById("searchResults");
+  if(!q){
+    container.innerHTML = `<div class="search-empty">Start typing to search titles, categories and tags.</div>`;
+    return;
+  }
+  const results = POSTS.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.excerpt.toLowerCase().includes(q) ||
+    getCategory(p.category).label.toLowerCase().includes(q) ||
+    p.tags.some(t => t.toLowerCase().includes(q))
+  );
+  if(results.length === 0){
+    container.innerHTML = `<div class="search-empty">No articles match "${escapeHtml(q)}".</div>`;
+    return;
+  }
+  container.innerHTML = results.map(p => `
+    <div class="search-result-item" onclick="goToPostFromSearch('${p.id}')">
+      <div class="sr-cover" style="${coverStyle(p.category)}"></div>
+      <div>
+        <div class="sr-title">${p.title}</div>
+        <div class="sr-meta">${getCategory(p.category).label} · ${fmtDate(p.date)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+function goToPostFromSearch(id){
+  closeSearch();
+  location.hash = "#post/" + id;
+}
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape") closeSearch();
+  if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k"){ e.preventDefault(); openSearch(); }
+});
+
+/* ---------------- Newsletter (demo only) ---------------- */
+function subscribeNewsletter(){
+  const input = document.getElementById("newsletterEmail");
+  const msg = document.getElementById("newsletterMsg");
+  const val = input.value.trim();
+  if(!val || !val.includes("@")){
+    msg.textContent = "Enter a valid email to subscribe.";
+    msg.style.color = "var(--danger)";
+    return;
+  }
+  msg.textContent = "You're on the list — thanks for subscribing!";
+  msg.style.color = "var(--accent)";
+  input.value = "";
+}
+
+/* ---------------- Theme ---------------- */
+async function toggleTheme(){
+  const isDark = document.documentElement.classList.toggle("dark");
+  document.getElementById("themeIconSun").style.display = isDark ? "none" : "block";
+  document.getElementById("themeIconMoon").style.display = isDark ? "block" : "none";
+  try{ await window.storage.set("blog:theme", isDark ? "dark" : "light", false); }catch(e){}
+}
+async function initTheme(){
+  let theme = "light";
+  try{
+    const res = await window.storage.get("blog:theme", false);
+    if(res) theme = res.value;
+  }catch(e){}
+  const isDark = theme === "dark";
+  document.documentElement.classList.toggle("dark", isDark);
+  document.getElementById("themeIconSun").style.display = isDark ? "none" : "block";
+  document.getElementById("themeIconMoon").style.display = isDark ? "block" : "none";
+}
+
+/* ---------------- Mobile menu ---------------- */
+function toggleMobileMenu(){
+  document.getElementById("navLinks").classList.toggle("open");
+}
+function closeMobileMenu(){
+  document.getElementById("navLinks").classList.remove("open");
+}
+
+/* ---------------- Router ---------------- */
+function route(){
+  const hash = location.hash || "#home";
+  const homeView = document.getElementById("homeView");
+  const detailView = document.getElementById("detailView");
+  window.scrollTo({ top: 0, behavior: "auto" });
+
+  if(hash.startsWith("#post/")){
+    const id = hash.replace("#post/", "");
+    homeView.style.display = "none";
+    detailView.style.display = "block";
+    renderDetail(id);
+  } else {
+    detailView.style.display = "none";
+    homeView.style.display = "block";
+  }
+  closeMobileMenu();
+}
+window.addEventListener("hashchange", route);
+
+/* ---------------- Init ---------------- */
+async function init(){
+  document.getElementById("year").textContent = new Date().getFullYear();
+  await initTheme();
+  renderNavCategories();
+  renderFooterSocial();
+  renderChips();
+  renderHero();
+  renderGrid();
+  route();
+}
+init();
+
+</script>
+</body>
+</html>
